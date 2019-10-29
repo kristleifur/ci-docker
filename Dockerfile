@@ -4,7 +4,7 @@ FROM $BASEIMAGE as baseimage
 ENV PS1="\h:\w\$ "
 
 FROM baseimage
-RUN apk add --no-cache python3 make bash jq fish
+RUN apk add --no-cache python3 make bash jq fish git
 RUN pip3 --no-cache install awscli poetry codecov
 
 ARG YAML_BIN_VERSION=2.4.0
