@@ -3,9 +3,9 @@ ARG DOCKER_VERSION=docker:latest
 
 FROM $DOCKER_VERSION AS latest_docker
 
-FROM scratch AS yq
+FROM $BASEIMAGE AS yq
 ARG YQ_VERSION=2.4.0
-ADD "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" /yq
+RUN wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /yq
 
 
 FROM $BASEIMAGE
