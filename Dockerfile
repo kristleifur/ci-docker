@@ -15,7 +15,7 @@ FROM $BASEIMAGE AS pup
 ARG PUP_VERSION=0.4.0
 RUN wget -O- "https://github.com/ericchiang/pup/releases/download/v${PUP_VERSION}/pup_v${PUP_VERSION}_linux_amd64.zip" \
     | busybox unzip -  # writes binary to /pup
-RUN chmod +x /yq
+RUN chmod +x /pup
 
 
 FROM $BASEIMAGE as ci-docker
