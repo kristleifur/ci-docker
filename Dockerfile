@@ -1,17 +1,19 @@
-ARG BASEIMAGE=docker/compose:1.24.1
+ARG BASEIMAGE=python:3.7-slim-buster
 ARG DOCKER_VERSION=docker:latest
+ARG DOCKER_COMPOSE_DEBIAN_IMAGE=docker/compose:1.25.0-rc4-debian
+ARG DOCKER_COMPOSE_ALPINE_IMAGE=docker/compose:1.25.0-rc4-alpine
 
-
-FROM $DOCKER_VERSION AS latest_docker
-# 'latest_docker' is used as a `COPY --from` target at the end
+# these are used as a `COPY --from` target at the end
+FROM $DOCKER_VERSION AS docker_image
+FROM $DOCKER_COMPOSE_DEBIAN_IMAGE AS docker_compose_image
 
 # download some dependencies as dedicated build stages so buildkit can parallelize them
-FROM $BASEIMAGE AS yq
+FROM $DOCKER_COMPOSE_ALPINE_IMAGE AS yq
 ARG YQ_VERSION=2.4.0
 RUN wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /yq
 RUN chmod +x yq
 
-FROM $BASEIMAGE AS pup
+FROM $DOCKER_COMPOSE_ALPINE_IMAGE AS pup
 ARG PUP_VERSION=0.4.0
 RUN wget -O- "https://github.com/ericchiang/pup/releases/download/v${PUP_VERSION}/pup_v${PUP_VERSION}_linux_amd64.zip" \
     | busybox unzip -  # writes binary to /pup
@@ -20,16 +22,14 @@ RUN chmod +x /pup
 
 FROM $BASEIMAGE as ci-docker
 
- # strip out fixed docker-compose entrypoint
-ENTRYPOINT []
-
-RUN apk add --no-cache python3 make bash jq fish git curl
-
-ENV PS1="\h:\w\$ "
 CMD bash
 
-RUN pip3 --no-cache install awscli poetry codecov
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc make curl wget jq git
 
-COPY --from=latest_docker /usr/local/bin/docker /docker
+RUN pip install --no-cache awscli poetry codecov
+
+COPY --from=docker_image /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker_compose_image /usr/local/bin/docker-compose /usr/local/bin/docker-compose
 COPY --from=yq /yq /usr/local/bin/yq
 COPY --from=pup /pup /usr/local/bin/pup
