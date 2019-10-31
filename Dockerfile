@@ -3,8 +3,9 @@ ARG DOCKER_VERSION=docker:latest
 
 
 FROM $DOCKER_VERSION AS latest_docker
-# 'latest_docker' is used as a `COPY --from` target at the end (buildkit parallelizes this)
+# 'latest_docker' is used as a `COPY --from` target at the end
 
+# download some dependencies as dedicated build stages so buildkit can parallelize them
 FROM $BASEIMAGE AS yq
 ARG YQ_VERSION=2.4.0
 RUN wget "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" -O /yq
